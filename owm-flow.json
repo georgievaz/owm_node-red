@@ -1,0 +1,553 @@
+[
+    {
+        "id": "e6740623.b934e8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "12fbce7f.2b7102",
+        "type": "inject",
+        "z": "e6740623.b934e8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "42df60a0.94fae"
+            ]
+        ]
+    },
+    {
+        "id": "d339a836.e035e8",
+        "type": "mqtt out",
+        "z": "e6740623.b934e8",
+        "name": "mqtt-pub",
+        "topic": "SCS/weather/berlin",
+        "qos": "2",
+        "retain": "",
+        "broker": "8afbeffe.e9095",
+        "x": 560,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "6c8a85c9.17757c",
+        "type": "mqtt in",
+        "z": "e6740623.b934e8",
+        "name": "mqtt-sub",
+        "topic": "SCS/weather/berlin",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "8afbeffe.e9095",
+        "x": 110,
+        "y": 580,
+        "wires": [
+            [
+                "cfb548a3.79a148",
+                "649795a1.93229c"
+            ]
+        ]
+    },
+    {
+        "id": "8c6c3e96.50c9a",
+        "type": "debug",
+        "z": "e6740623.b934e8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 690,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "cfb548a3.79a148",
+        "type": "function",
+        "z": "e6740623.b934e8",
+        "name": "Current conditions ",
+        "func": "//* Function for Time Conversions *\n\nfunction timeConverter(UNIX_timestamp){\n    var a = new Date(UNIX_timestamp * 1000);\n    var hour = a.getHours();\n        if (hour < 10) {hour = \"0\" + hour;}\n    var min = a.getMinutes();\n        if (min < 10) {min = \"0\" + min;}\n    var time = hour + ':' + min;\nreturn time;}\n\nvar cond_icon = \"wi wi-owm-\" + msg.payload.current.weather[0].icon;\nvar temperature = msg.payload.current.temp;\nvar cond_descr = msg.payload.current.weather[0].description;\nvar windSpeed = msg.payload.current.wind_speed; \nvar windDeg = \"fa fa-location-arrow wi-rotate-\" + msg.payload.current.wind_deg; \nvar humidity = msg.payload.current.humidity;\nvar sunRise = timeConverter(msg.payload.current.sunrise);\nvar sunSet = timeConverter(msg.payload.current.sunset);\nreturn [{payload: [cond_icon, cond_descr]},{payload: temperature},{payload: windSpeed},{payload: windDeg},{payload: humidity}, {payload: sunRise}, {payload: sunSet}];",
+        "outputs": 7,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 340,
+        "y": 580,
+        "wires": [
+            [
+                "c53001de.0ef6c"
+            ],
+            [
+                "9ed11acb.14f538"
+            ],
+            [
+                "923cbe89.e4efc"
+            ],
+            [
+                "31f0ac0e.67a994"
+            ],
+            [
+                "d02d770e.af18a8"
+            ],
+            [
+                "c44e6be2.f1a4c8"
+            ],
+            [
+                "c8552d66.a201c"
+            ]
+        ]
+    },
+    {
+        "id": "d02d770e.af18a8",
+        "type": "ui_text",
+        "z": "e6740623.b934e8",
+        "group": "14a6b45.c14044c",
+        "order": 2,
+        "width": 4,
+        "height": 1,
+        "name": "",
+        "label": "Humidity:",
+        "format": "{{msg.payload}} %",
+        "layout": "row-center",
+        "x": 660,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "9ed11acb.14f538",
+        "type": "ui_text",
+        "z": "e6740623.b934e8",
+        "group": "14a6b45.c14044c",
+        "order": 1,
+        "width": 4,
+        "height": 1,
+        "name": "",
+        "label": "Temperature:",
+        "format": "{{msg.payload}} °C ",
+        "layout": "row-center",
+        "x": 630,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "923cbe89.e4efc",
+        "type": "ui_text",
+        "z": "e6740623.b934e8",
+        "group": "afe05275.58d41",
+        "order": 1,
+        "width": 3,
+        "height": 1,
+        "name": "Wind speed ",
+        "label": "<i class=\"wi wi-darksky-wind\"/>",
+        "format": "{{msg.payload}} m/s",
+        "layout": "row-center",
+        "x": 610,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "31f0ac0e.67a994",
+        "type": "function",
+        "z": "e6740623.b934e8",
+        "name": "Wind direction ",
+        "func": "var deg = msg.payload;\nvar degIcon = \"fa fa-location-arrow wi-rotate-\"+deg;\n\nif (deg>11.25 && deg<=78.75){\n    return {payload: [degIcon, \"north-east\"]};\n}else if (deg>78.75 && deg<=101.25){\n    return {payload: [degIcon, \"east\"]};\n}else if (deg>101.25 && deg<=168.75){\n    return {payload: [degIcon, \"south-east\"]};\n}else if (deg>168.75 && deg<=191.25){\n    return {payload: [degIcon, \"south\"]};\n}else if (deg>191.25 && deg<=258.75){\n    return {payload: [degIcon, \"south-west\"]};\n}else if (deg>258.75 && deg<=281.25){\n    return {payload: [degIcon, \"west\"]};\n}else if (deg>281.25 && deg<=348.75){\n    return {payload: [degIcon, \"north-west\"]};\n}else{\n    return {payload: [degIcon, \"north\"]};\n}\n    ",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 620,
+        "y": 620,
+        "wires": [
+            [
+                "c243aa36.ffcd28"
+            ]
+        ]
+    },
+    {
+        "id": "c243aa36.ffcd28",
+        "type": "ui_text",
+        "z": "e6740623.b934e8",
+        "group": "afe05275.58d41",
+        "order": 2,
+        "width": 3,
+        "height": 1,
+        "name": "Wind direction ",
+        "label": "<i class=\"{{msg.payload[0]}}\"/>",
+        "format": "{{msg.payload[1]}}",
+        "layout": "row-center",
+        "x": 800,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "c53001de.0ef6c",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "8e91688a.1a1588",
+        "name": "Condition ",
+        "order": 2,
+        "width": 3,
+        "height": 2,
+        "format": "<div justify-content=\"center\"><i class=\"{{msg.payload[0]}} wi-4x\"></i></div>\n<div justify-content=\"center\">{{msg.payload[1]}}</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 580,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c44e6be2.f1a4c8",
+        "type": "ui_text",
+        "z": "e6740623.b934e8",
+        "group": "b363e4ec.0c1bb8",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Sunrise",
+        "label": "<i class=\"wi wi-owm-01d\"/> <i class=\"wi wi-arrow wi-rotate-180\"></i> ",
+        "format": "{{msg.payload}}",
+        "layout": "row-center",
+        "x": 660,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "c8552d66.a201c",
+        "type": "ui_text",
+        "z": "e6740623.b934e8",
+        "group": "b363e4ec.0c1bb8",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "Sunset",
+        "label": "<i class=\"wi wi-owm-01d\"/> <i class=\"wi wi-arrow\"/>",
+        "format": " {{msg.payload}}",
+        "layout": "row-center",
+        "x": 660,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "42df60a0.94fae",
+        "type": "openweathermap",
+        "z": "e6740623.b934e8",
+        "name": "Berlin current + forecast",
+        "wtype": "onecall",
+        "lon": "13.4105",
+        "lat": "52.5244",
+        "city": "",
+        "country": "",
+        "language": "en",
+        "x": 430,
+        "y": 320,
+        "wires": [
+            [
+                "d339a836.e035e8",
+                "8c6c3e96.50c9a"
+            ]
+        ]
+    },
+    {
+        "id": "1322f8e7.e95597",
+        "type": "debug",
+        "z": "e6740623.b934e8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 290,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "c1b756d5.9e9458",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[0]",
+        "order": 1,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 820,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "649795a1.93229c",
+        "type": "function",
+        "z": "e6740623.b934e8",
+        "name": "Forecast",
+        "func": "//* Function for Date Conversions *\n\nfunction timeConverter(UNIX_timestamp){\n    var a = new Date(UNIX_timestamp * 1000);\n    var days = [\"Sun\", \"Mon\", \"Tues\", \"Wed\", \"Thu\", \"Fri\", \"Sat\"];\n    var day = days[a.getDay()];\n    var date = a.getDate();\n        if(date <= 9){\n            date = \"0\" + date;\n        }\n    var month = (a.getMonth() + 1);\n    if(month <= 8){\n        month = \"0\"+ month;\n    }\n    var time = day + \" \" + date + '/' + month;\nreturn time;}\n\nvar cond_icon;\nvar temperature;\nvar date;\nvar object = [];\n\nfor (i=1; i<=7; i++){\n    cond_icon = \"wi wi-owm-\" + msg.payload.daily[i].weather[0].icon;\n    temperature = msg.payload.daily[i].temp.day;\n    date = timeConverter(msg.payload.daily[i].dt)\n    object[i-1] = [date, cond_icon, temperature];\n}\nreturn [{payload: object[0]},\n        {payload: object[1]},\n        {payload: object[2]},\n        {payload: object[3]},\n        {payload: object[4]},\n        {payload: object[5]},\n        {payload: object[6]}];",
+        "outputs": 7,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 280,
+        "y": 900,
+        "wires": [
+            [
+                "c1b756d5.9e9458"
+            ],
+            [
+                "600914f2.f2d48c"
+            ],
+            [
+                "2e2a1f53.e7dba"
+            ],
+            [
+                "960eadb0.c4f36"
+            ],
+            [
+                "6a6d4da5.28d994"
+            ],
+            [
+                "f7f15a17.2d96f8"
+            ],
+            [
+                "6a9f6d46.b0de14",
+                "1322f8e7.e95597"
+            ]
+        ]
+    },
+    {
+        "id": "600914f2.f2d48c",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[1]",
+        "order": 2,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2e2a1f53.e7dba",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[2]",
+        "order": 3,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 900,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "960eadb0.c4f36",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[3]",
+        "order": 5,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6a6d4da5.28d994",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[4]",
+        "order": 4,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 980,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f7f15a17.2d96f8",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[5]",
+        "order": 6,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6a9f6d46.b0de14",
+        "type": "ui_template",
+        "z": "e6740623.b934e8",
+        "group": "2c3113b6.ecfa0c",
+        "name": "Condition[6]",
+        "order": 7,
+        "width": 2,
+        "height": 2,
+        "format": "<div style=\"justify-content: center;\">\n    {{msg.payload[0]}} \n</div>\n<div style=\"justify-content: center; padding-bottom: 10px\">\n    <i class=\"{{msg.payload[1]}} wi-2x\"></i>\n</div>\n<div style=\"justify-content: center;\">\n    {{msg.payload[2]}} °C\n</div>\n\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 610,
+        "y": 1060,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8afbeffe.e9095",
+        "type": "mqtt-broker",
+        "name": "public broker ",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "status",
+        "birthQos": "1",
+        "birthRetain": "true",
+        "birthPayload": "online",
+        "closeTopic": "status",
+        "closeQos": "1",
+        "closeRetain": "true",
+        "closePayload": "offline",
+        "willTopic": "status",
+        "willQos": "1",
+        "willRetain": "true",
+        "willPayload": "disconnected"
+    },
+    {
+        "id": "14a6b45.c14044c",
+        "type": "ui_group",
+        "name": "Currently",
+        "tab": "15aade36.6f99e2",
+        "order": 1,
+        "disp": true,
+        "width": "4",
+        "collapse": false
+    },
+    {
+        "id": "afe05275.58d41",
+        "type": "ui_group",
+        "name": "Wind",
+        "tab": "15aade36.6f99e2",
+        "order": 3,
+        "disp": true,
+        "width": "3",
+        "collapse": false
+    },
+    {
+        "id": "8e91688a.1a1588",
+        "type": "ui_group",
+        "name": "Berlin",
+        "tab": "15aade36.6f99e2",
+        "order": 2,
+        "disp": true,
+        "width": "4",
+        "collapse": false
+    },
+    {
+        "id": "b363e4ec.0c1bb8",
+        "type": "ui_group",
+        "name": "Daylight",
+        "tab": "15aade36.6f99e2",
+        "order": 4,
+        "disp": true,
+        "width": "3",
+        "collapse": false
+    },
+    {
+        "id": "2c3113b6.ecfa0c",
+        "type": "ui_group",
+        "name": "Weekly Forecast",
+        "tab": "15aade36.6f99e2",
+        "order": 5,
+        "disp": true,
+        "width": "14",
+        "collapse": false
+    },
+    {
+        "id": "15aade36.6f99e2",
+        "type": "ui_tab",
+        "name": "Berlin Weather Forecast",
+        "icon": "",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]
